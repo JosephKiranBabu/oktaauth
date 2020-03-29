@@ -1,6 +1,6 @@
 import requests
 import base64
-import urlparse
+import urllib.parse
 import logging
 from bs4 import BeautifulSoup
 log = logging.getLogger('oktaauth')
@@ -13,9 +13,8 @@ class OktaAPIAuth(object):
         self.username = username
         self.password = password
         self.passcode = passcode
-        url_new = ('https', okta_server,
-                   '', '', '','')
-        self.okta_url = urlparse.urlunparse(url_new)
+        url_new = ('https', okta_server, '', '', '', '')
+        self.okta_url = urllib.parse.urlunparse(url_new)
         return
 
     def okta_req(self, path, data):
@@ -109,7 +108,7 @@ class OktaSamlAuth(OktaAPIAuth):
         if resp.status_code != 200:
             raise Exception('Received error code from server: %s' % resp.status_code)
 
-        return resp.text.decode('utf8')
+        return resp.text
 
     def assertion(self, saml):
         assertion = ''
@@ -118,7 +117,7 @@ class OktaSamlAuth(OktaAPIAuth):
             if inputtag.get('name') == 'SAMLResponse':
                 assertion = inputtag.get('value')
 
-        return base64.b64decode(assertion)
+        return base64.b64decode(assertion).decode('utf8')
 
     def auth(self):
         token = super(OktaSamlAuth, self).auth()
